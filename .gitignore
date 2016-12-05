@@ -1,4 +1,5 @@
 node_module
 server/res
+server/src/ignore.txt
 push.sh
 npm-debug.log
