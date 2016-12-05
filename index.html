@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+	<head lang='ja'>
+		<meta charset='utf-8'>
+		<title>Conversation</title>
+		<link rel='stylesheet' type='text/css' href='/public/css/reset.css'>
+		<link rel='stylesheet' type='text/css' href='/public/css/main.css'>
+		<script type='text/javascript' src='/public/javascripts/library/d3.min.js'></script>
+		<script type='text/javascript' src='/public/javascripts/library/d3.layout.cloud.js'></script>
+		<script type='text/javascript' src='/public/javascripts/main.js'></script>
+		<script type='text/javascript' src='/public/javascripts/drawing/wordcloud.js'></script>
+	</head>
+	<body>
+		<header id='header'>
+		</header>
+		<main id='main'>
+			<svg id='wc'></svg> 
+		</main>
+		<footer id='footer'>
+			<div id='status'>status</div>
+			<form id='upload' action='upload' method='post' enctype='multipart/form-data'>
+				<input type='file' name='input_file' required>
+				<input type='checkbox' name='parts' value='名詞'>名詞
+				<input type='checkbox' name='parts' value='動詞'>動詞
+				<select name='dividenumber'>
+					<option value='1'>1</option>
+					<option value='2'>2</option>
+					<option value='3'>3</option>
+					<option value='4'>4</option>
+				</select>
+				<select name='topicnumber'>
+					<option value='3'>3</option>
+					<option value='5'>5</option>
+					<option value='10'>10</option>
+					<option value='15'>15</option>
+				</select>
+				<input type='submit' value='send'>
+			</form>
+		</footer>
+		<script>
+			init();
+		</script>
+	</body>
+</html>
