@@ -46,12 +46,14 @@ exports.exec = function(params){
 
 	exec(`node ${dirname.js}table.js ${dirname.res}morpheme/json ./server/src/ignore.txt ${dirname.res}tabulation.csv`);
 
-	exec(`R --vanilla --slave --args ${dirname.res}tabulation.csv ${dirname.res}tfidf.csv < ${dirname.r}tfidf.R`);
+	exec(`docker run -i --rm -v ${process.cwd()}:/tmp r-nmf R --vanilla --slave --args tmp/${dirname.res}tabulation.csv tmp/${dirname.res}tfidf.csv < ${dirname.r}tfidf.R`);
 
 	fs.mkdirSync(`${dirname.res}nmf`);
 	fs.mkdirSync(`${dirname.res}nmf/topic`);
 
-	exec(`R --vanilla --slave --args ${dirname.res}tfidf.csv ${dirname.res}nmf/w.csv ${dirname.res}nmf/h.csv ${divnumber} ${topicnumber} < ${dirname.r}nmf.R`);
-	exec(`R --vanilla --slave --args ${dirname.res}nmf/w.csv ${dirname.res}nmf/w_s.csv ${topicnumber} < ${dirname.r}sort.R`);
-	exec(`R --vanilla --slave --args ${dirname.res}nmf/w_s.csv ${dirname.res}nmf/topic/topic_ ${topicnumber} < ${dirname.r}extract.R`);
+	exec(`docker run -i --rm -v ${process.cwd()}:/tmp r-nmf R --vanilla --slave --args tmp/${dirname.res}tfidf.csv tmp/${dirname.res}nmf/w.csv tmp/${dirname.res}nmf/h.csv ${divnumber} ${topicnumber} < ${dirname.r}nmf.R`);
+	exec(`docker run -i --rm -v ${process.cwd()}:/tmp r-nmf R --vanilla --slave --args tmp/${dirname.res}nmf/w.csv tmp/${dirname.res}nmf/w_s.csv ${topicnumber} < ${dirname.r}sort.R`);
+	exec(`docker run -i --rm -v ${process.cwd()}:/tmp r-nmf R --vanilla --slave --args tmp/${dirname.res}nmf/w_s.csv tmp/${dirname.res}nmf/topic/topic_ ${topicnumber} < ${dirname.r}extract.R`);
+
+	console.log('fin');
 };

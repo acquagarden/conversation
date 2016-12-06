@@ -25,8 +25,8 @@ Clouds.prototype.draw = function(){
 Clouds.prototype._getSize = function(){
 	var e = document.getElementById('wc');
 
-	var w = Number(window.getComputedStyle(e, null).width.match(/[0-9]+/g));
-	var h = Number(window.getComputedStyle(e, null).height.match(/[0-9]+/g));
+	var w = Number(window.getComputedStyle(e, null).width.match(/\d+(\.\d+)?/g));
+	var h = Number(window.getComputedStyle(e, null).height.match(/\d+(\.\d+)?/g));
 
 	return {
 		width: w * this.scale.width,
@@ -37,8 +37,8 @@ Clouds.prototype._getSize = function(){
 Clouds.prototype._getOffset = function(i){
 	var e = document.getElementById('wc');
 
-	var w = Number(window.getComputedStyle(e, null).width.match(/[0-9]+/g));
-	var h = Number(window.getComputedStyle(e, null).height.match(/[0-9]+/g));
+	var w = Number(window.getComputedStyle(e, null).width.match(/\d+(\.\d+)?/g));
+	var h = Number(window.getComputedStyle(e, null).height.match(/\d+(\.\d+)?/g));
 
 	return {
 		x: w/(this.clouds.length+1) * (i+1),
