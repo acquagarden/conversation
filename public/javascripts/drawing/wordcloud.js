@@ -8,8 +8,11 @@ function Clouds(params){
 	this.time = params.time;
 	this.clouds = [];
 
-	for(var i = 0; i < params.files.length; i++){
-		let cloud = new Cloud(params.files[i]).setSize(this._getSize());
+	for(var i = 0; i < params.topicfiles.length; i++){
+		let cloud = new Cloud({
+			filename: params.topicfiles[i],
+			size: this._getSize()
+		});
 		this.clouds.push(cloud);
 	}
 
@@ -23,26 +26,20 @@ Clouds.prototype.draw = function(){
 };
 
 Clouds.prototype._getSize = function(){
-	var e = document.getElementById('wc');
-
-	var w = Number(window.getComputedStyle(e, null).width.match(/\d+(\.\d+)?/g));
-	var h = Number(window.getComputedStyle(e, null).height.match(/\d+(\.\d+)?/g));
+	var size = getSize('main');
 
 	return {
-		width: w * this.scale.width,
-		height: h * this.scale.height
+		width: size.width * this.scale.width,
+		height: size.height * this.scale.height
 	};
 }
 
 Clouds.prototype._getOffset = function(i){
-	var e = document.getElementById('wc');
-
-	var w = Number(window.getComputedStyle(e, null).width.match(/\d+(\.\d+)?/g));
-	var h = Number(window.getComputedStyle(e, null).height.match(/\d+(\.\d+)?/g));
+	var size = getSize('main');
 
 	return {
-		x: w/(this.clouds.length+1) * (i+1),
-		y: h/this.time.size * (Number(this.time.index)+0.5)
+		x: size.width/(this.clouds.length+1) * (i+1),
+		y: size.height/this.time.size * (Number(this.time.index)+0.5)
 	};
 }
 
@@ -51,20 +48,18 @@ Clouds.prototype._getOffset = function(i){
  * size: { width, height },
  * offset: { x, y }
  */
-function Cloud(filename){
-	this.filename = filename;
-	this.size = null;
+function Cloud(params){
+	this.filename = params.filename;
+	this.size = params.size;
 	this.offset = null;
 }
 
 Cloud.prototype.setSize = function(size){
 	this.size = size;
-	return this;
 }
 
 Cloud.prototype.setOffset = function(offset){
 	this.offset = offset;
-	return this;
 }
 
 Cloud.prototype.draw = function(){
@@ -91,7 +86,7 @@ Cloud.prototype.draw = function(){
 				.font('Impact')
 				.fontSize(function(d){ return d.size; })
 				.on('end', function(words){
-					d3.select('svg')
+					d3.select('#wc')
 					.append('g')
 					.attr('transform', `translate(${cloud.offset.x}, ${cloud.offset.y})`)
 					.selectAll('text')

@@ -1,0 +1,16 @@
+{
+	"server": {
+		"correction": 100,
+		"cluster": 4,
+		"components": {
+			"1": 1,
+			"2": 2
+		}
+	},
+	"client": {
+		"components": {
+			"1": 1,
+			"2": 2
+		}
+	}
+}

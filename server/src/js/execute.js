@@ -9,51 +9,78 @@ exports.exec = function(params){
 	var
 		filename = params.file.filename,
 		dirname = {
-			texts: `./server/res/texts/`,
-			res: `./server/res/files/${filename}/`,
+			text: `./server/res/texts/${filename}`,
+			root: `./server/res/files/${filename}/`,
 			js: `${__dirname}/`,
 			r: `${__dirname}/../R/`
-		},
-		parts = params.parts.isArray > 1 ? params.parts.join(',') : params.parts,
-		divnumber = params.divnumber,
-		topicnumber = params.topicnumber;
+		};
 
-	fs.mkdirSync(`${dirname.res}`);
-	fs.mkdirSync(`${dirname.res}remark`);
+	fs.mkdirSync(`${dirname.root}`);
+	fs.mkdirSync(`${dirname.root}person`);
+	fs.mkdirSync(`${dirname.root}person/remark`);
 
-	divide.divide({
-		inputName: `${dirname.texts}${filename}`,
-		outputDir: `${dirname.res}remark/`,
-		divnumber: divnumber
+	divide.dividePerson({
+		inputName: `${dirname.text}`,
+		outputDir: `${dirname.root}person/remark/`
 	});
 
-	fs.mkdirSync(`${dirname.res}morpheme`);
-	fs.mkdirSync(`${dirname.res}morpheme/xml`);
+	fs.mkdirSync(`${dirname.root}person/morpheme`);
+	fs.mkdirSync(`${dirname.root}person/morpheme/xml`);
 
 	(function(){
-		var files = fs.readdirSync(`${dirname.res}remark`);
+		var files = fs.readdirSync(`${dirname.root}person/remark`);
 		for(var i in files)
-			exec(`node ${dirname.js}morpheme.js ${dirname.res}remark/${files[i]} ${dirname.res}morpheme/xml/morpheme_${i}.xml`);
+			exec(`node ${dirname.js}morpheme.js ${dirname.root}person/remark/${files[i]} ${dirname.root}person/morpheme/xml/morpheme_${i}.xml`);
 	})();
 
-	fs.mkdirSync(`${dirname.res}morpheme/json`);
+	fs.mkdirSync(`${dirname.root}person/morpheme/json`);
 
 	(function(){
-		var files = fs.readdirSync(`${dirname.res}morpheme/xml`);
+		var files = fs.readdirSync(`${dirname.root}person/morpheme/xml`);
 		for(var i in files)
-			exec(`node ${dirname.js}extract.js ${dirname.res}morpheme/xml/${files[i]} ${dirname.res}morpheme/json/morpheme_${i}.json ${parts}`);
+			exec(`node ${dirname.js}extract.js ${dirname.root}person/morpheme/xml/${files[i]} ${dirname.root}person/morpheme/json/morpheme_${i}.json ${params.parts}`);
 	})();
 
-	exec(`node ${dirname.js}table.js ${dirname.res}morpheme/json ./server/src/ignore.txt ${dirname.res}tabulation.csv`);
+	exec(`node ${dirname.js}table.js ${dirname.root}person/morpheme/json ./server/src/ignore.txt ${dirname.root}person/tabulation.csv`);
 
-	exec(`docker run -i --rm -v ${process.cwd()}:/tmp r-nmf R --vanilla --slave --args tmp/${dirname.res}tabulation.csv tmp/${dirname.res}tfidf.csv < ${dirname.r}tfidf.R`);
+	fs.mkdirSync(`${dirname.root}person/corresp`);
 
-	fs.mkdirSync(`${dirname.res}nmf`);
-	fs.mkdirSync(`${dirname.res}nmf/topic`);
+	exec(`docker run -i --rm -v ${process.cwd()}:/tmp r-nmf R --vanilla --slave --args tmp/${dirname.root}person/tabulation.csv tmp/${dirname.root}person/corresp/index.csv tmp/${dirname.root}person/corresp/rscore.csv tmp/${dirname.root}person/corresp/cscore.csv ${params.cluster} ${params.components[1]} ${params.components[2]} < ${dirname.r}corresp.R`);
 
-	exec(`docker run -i --rm -v ${process.cwd()}:/tmp r-nmf R --vanilla --slave --args tmp/${dirname.res}tfidf.csv tmp/${dirname.res}nmf/w.csv tmp/${dirname.res}nmf/h.csv ${divnumber} ${topicnumber} < ${dirname.r}nmf.R`);
-	exec(`docker run -i --rm -v ${process.cwd()}:/tmp r-nmf R --vanilla --slave --args tmp/${dirname.res}nmf/w.csv tmp/${dirname.res}nmf/w_s.csv ${topicnumber} < ${dirname.r}sort.R`);
-	exec(`docker run -i --rm -v ${process.cwd()}:/tmp r-nmf R --vanilla --slave --args tmp/${dirname.res}nmf/w_s.csv tmp/${dirname.res}nmf/topic/topic_ ${topicnumber} < ${dirname.r}extract.R`);
+	fs.mkdirSync(`${dirname.root}time`);
+	fs.mkdirSync(`${dirname.root}time/remark`);
 
-	console.log('fin');
+	divide.divideTime({
+		inputName: `${dirname.text}`,
+		outputDir: `${dirname.root}time/remark/`,
+		divnumber: params.number.divide
+	});
+
+	fs.mkdirSync(`${dirname.root}time/morpheme`);
+	fs.mkdirSync(`${dirname.root}time/morpheme/xml`);
+
+	(function(){
+		var files = fs.readdirSync(`${dirname.root}time/remark`);
+		for(var i in files)
+			exec(`node ${dirname.js}morpheme.js ${dirname.root}time/remark/${files[i]} ${dirname.root}time/morpheme/xml/morpheme_${i}.xml`);
+	})();
+
+	fs.mkdirSync(`${dirname.root}time/morpheme/json`);
+
+	(function(){
+		var files = fs.readdirSync(`${dirname.root}time/morpheme/xml`);
+		for(var i in files)
+			exec(`node ${dirname.js}extract.js ${dirname.root}time/morpheme/xml/${files[i]} ${dirname.root}time/morpheme/json/morpheme_${i}.json ${params.parts}`);
+	})();
+
+	exec(`node ${dirname.js}table.js ${dirname.root}time/morpheme/json ./server/src/ignore.txt ${dirname.root}time/tabulation.csv`);
+
+	exec(`docker run -i --rm -v ${process.cwd()}:/tmp r-nmf R --vanilla --slave --args tmp/${dirname.root}time/tabulation.csv tmp/${dirname.root}time/tfidf.csv ${params.correction} < ${dirname.r}tfidf.R`);
+
+	fs.mkdirSync(`${dirname.root}time/nmf`);
+	fs.mkdirSync(`${dirname.root}time/nmf/topic`);
+
+	exec(`docker run -i --rm -v ${process.cwd()}:/tmp r-nmf R --vanilla --slave --args tmp/${dirname.root}time/tfidf.csv tmp/${dirname.root}time/nmf/w.csv tmp/${dirname.root}time/nmf/h.csv ${params.number.divide} ${params.number.topic} < ${dirname.r}nmf.R`);
+	exec(`docker run -i --rm -v ${process.cwd()}:/tmp r-nmf R --vanilla --slave --args tmp/${dirname.root}time/nmf/w.csv tmp/${dirname.root}time/nmf/w_s.csv ${params.number.topic} < ${dirname.r}sort.R`);
+	exec(`docker run -i --rm -v ${process.cwd()}:/tmp r-nmf R --vanilla --slave --args tmp/${dirname.root}time/nmf/w_s.csv tmp/${dirname.root}time/nmf/topic/topic_ ${params.number.topic} < ${dirname.r}extract.R`);
 };

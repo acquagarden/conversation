@@ -10,6 +10,7 @@ s <- NULL
 for(i in 1:ncol(d))
 	s <- c(s, sum(d[,i]))
 tf <- t(t(d)/s)
+tf <- log(tf*as.numeric(args[3])+1)/log(as.numeric(args[3])+1)
 
 func <- function(x) log10(ncol(d)/x)+1
 

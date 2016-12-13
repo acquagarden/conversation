@@ -21,6 +21,7 @@ function create(array){
 	return new Promise(function(resolve){
 		read(ignoreName, false).then(function(ignore){
 			ignore = ignore.split('\n');
+			console.log(ignore);
 			var list = merge(array);
 
 			var str = '';

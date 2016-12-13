@@ -1,8 +1,7 @@
 'use strict'
 var fs = require('fs');
 
-exports.divide = function(params){
-
+exports.divideTime = function(params){
 	var data = fs.readFileSync(params.inputName);
 
 	var str = data.toString();
@@ -24,4 +23,23 @@ exports.divide = function(params){
 
 	for(var i = 0; i < ary.length; i++)
 		fs.writeFileSync(`${params.outputDir}remark_${i}.txt`, ary[i]);
+};
+
+exports.dividePerson = function(params){
+	var data = fs.readFileSync(params.inputName);
+	
+	var strAry = data.toString().split('\n');
+
+	var texts = {};
+	for(var str of strAry){
+		let ary = str.split(':');
+		if(typeof texts[ary[0]] === 'undefined') texts[ary[0]] = [];
+		
+		texts[ary[0]].push(ary[1]);
+	}
+
+	var keys = Object.keys(texts).sort();
+	
+	for(var i = 0; i < keys.length; i++)
+		fs.writeFileSync(`${params.outputDir}remark_${i}.txt`, texts[keys[i]]);
 };

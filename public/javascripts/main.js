@@ -1,37 +1,50 @@
 'use strict'
 
+var currentTab = 'corresp';
+
 function init(){
-	var form = document.getElementById('upload');
+	changeTabs(currentTab);
 
-	form.addEventListener('submit', function(e){
-		var div = document.getElementById('status');
-		div.innerHTML = 'start';
+	d3.json('server/src/params.json', function(err, params){
+		params = params.client;
 
-		(document.getElementById('wc')).innerHTML = '';
+		var form = document.getElementById('upload');
+		form.addEventListener('submit', function(e){
+			var div = document.getElementById('status');
+			div.innerHTML = 'start';
 
-		e.preventDefault();
+			(document.getElementById('wc')).innerHTML = '';
+			(document.getElementById('corresp')).innerHTML = '';
 
-		var formData = new FormData(form);
+			e.preventDefault();
 
-		var xhr = new XMLHttpRequest();
+			var formData = new FormData(form);
 
-		xhr.onload = function(e){
-			if(xhr.status !== 200)
-				div.innerHTML = `error : ${xhr.responseText}`;
-			else{
-				let res = JSON.parse(xhr.responseText);
+			var xhr = new XMLHttpRequest();
 
-				div.innerHTML = `filename : ${res.file.originalname}`;
-				drawClouds(res);
-			}
-		};
+			xhr.onload = function(e){
+				if(xhr.status !== 200)
+					div.innerHTML = `error : ${xhr.responseText}`;
+				else{
+					let res = JSON.parse(xhr.responseText);
 
-		xhr.ontimeout = function(e){
-			console.log(e);
-		};
+					div.innerHTML = `filename : ${res.file.originalname}`;
 
-		xhr.open('post', '/upload');
-		xhr.send(formData);
+					drawClouds({ topicfiles: res.topicfiles });
+					drawCorresp({
+						components: params.components,
+						rowData: `server/res/files/${res.file.filename}/person/corresp/rscore.csv`
+					});
+				}
+			};
+
+			xhr.ontimeout = function(e){
+				console.log(e);
+			};
+
+			xhr.open('post', '/upload');
+			xhr.send(formData);
+		});
 	});
 }
 
@@ -39,40 +52,25 @@ function getSize(id){
 	var e = document.getElementById(id);
 
 	return {
-		width: Number(window.getComputedStyle(e, null).width.match(/[0-9]+/g)),
-		height: Number(window.getComputedStyle(e, null).height.match(/[0-9]+/g))
+		width: Number(window.getComputedStyle(e, null).width.match(/\d+(\.\d+)?/g)),
+		height: Number(window.getComputedStyle(e, null).height.match(/\d+(\.\d+)?/g))
 	};
 }
 
-function drawLine(res){
-	var size = getSize('wc');
+function changeTabs(id){
+	document.getElementById('wc').style.display = 'none';
+	document.getElementById('corresp').style.display = 'none';
 
-	var keys = Object.keys(res.files);
-	for(var i of keys){
-		var carray = [
-			[0, size.height/keys.length*(Number(i)+1)],
-			[size.width, size.height/keys.length*(Number(i)+1)]
-		];
-		console.log(i+1);
-
-		var line = d3.line()
-			.x(function(d){ return d[0]; })
-			.y(function(d){ return d[1]; });
-
-		d3.select('svg')
-			.append('path')
-			.attr('d', line(carray))
-			.attr('stroke', 'lightgreen')
-			.attr('stroke-width', 5);
-	}
+	document.getElementById(id).style.display = 'block';
+	currentTab = id;
 }
 
-function drawClouds(res){
-	var keys = Object.keys(res.files);
+function drawClouds(params){
+	var keys = Object.keys(params.topicfiles);
 	for(var i of keys){
 		var clouds = new Clouds({
 			time: { size: keys.length, index: i},
-			files: res.files[i]
+			topicfiles: params.topicfiles[i]
 		}).draw();
 	}
 }

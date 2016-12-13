@@ -17,6 +17,19 @@ app.use(parser.json());
 
 var upload = multer({ dest: __dirname + '/server/res/texts' });
 
+var params = (function(path){
+	var params = JSON.parse(fs.readFileSync(path)).server;
+
+	return {
+		get: function(key){ return typeof key === 'undefined' ? params : params[key]; },
+		set: function(param){
+			var keys = Object.keys(param);
+			for(var key of keys)
+				params[key] = param[key];	
+		}
+	}
+})('server/src/params.json');
+
 app.get('/', function(req, res){
 	res.sendFile(__dirname + '/index.html');
 });
@@ -25,9 +38,18 @@ var execute = require(__dirname + '/server/src/js/execute');
 app.post('/upload', upload.single('input_file'), function(req, res){
 	if(typeof req.file | typeof req.body.parts === 'undefined') res.sendStatus(400);
 	else{
-		execute.exec({ file: req.file, parts: req.body.parts, divnumber: req.body.dividenumber, topicnumber: req.body.topicnumber });
+		params.set({
+			file: req.file,
+			parts: req.body.parts.isArray > 1 ? req.body.parts.join(',') : req.body.parts,
+			number: {
+				divide: req.body.divide,
+				topic: req.body.topic
+			}
+		});
+			
+		execute.exec(params.get());
 
-		fs.readFile(`server/res/files/${req.file.filename}/nmf/h.csv`, function(err, data){
+		fs.readFile(`server/res/files/${req.file.filename}/time/nmf/h.csv`, function(err, data){
 			if(err) throw err;
 
 			data = data.toString().split('\n');
@@ -43,10 +65,14 @@ app.post('/upload', upload.single('input_file'), function(req, res){
 
 				if(typeof files[max] === 'undefined') files[max] = [];
 
-				files[max].push(`server/res/files/${req.file.filename}/nmf/topic/topic_${i}.csv`);
+				files[max].push(`server/res/files/${req.file.filename}/time/nmf/topic/topic_${i}.csv`);
 			}
 
-			res.send(JSON.stringify({ file: req.file, files: files }));
+			params.set({
+				topicfiles: files
+			});
+			
+			res.send(JSON.stringify(params.get()));
 		});
 	}
 });

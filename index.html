@@ -2,19 +2,27 @@
 <html>
 	<head lang='ja'>
 		<meta charset='utf-8'>
+		<meta http-equiv='content-language' content='ja'>
 		<title>Conversation</title>
 		<link rel='stylesheet' type='text/css' href='/public/css/reset.css'>
 		<link rel='stylesheet' type='text/css' href='/public/css/main.css'>
 		<script type='text/javascript' src='/public/javascripts/library/d3.min.js'></script>
 		<script type='text/javascript' src='/public/javascripts/library/d3.layout.cloud.js'></script>
+		<script type='text/javascript' src='/public/javascripts/library/d3-force.min.js'></script>
 		<script type='text/javascript' src='/public/javascripts/main.js'></script>
+		<script type='text/javascript' src='/public/javascripts/drawing/corresp.js'></script>
 		<script type='text/javascript' src='/public/javascripts/drawing/wordcloud.js'></script>
 	</head>
 	<body>
 		<header id='header'>
+			<nav>
+				<a href='#wc' onclick="changeTabs('wc'); return false;">Topics</a>
+				<a href='#corresp' onclick="changeTabs('corresp'); return false;">Corresp</a>
+			<nav>
 		</header>
 		<main id='main'>
-			<svg id='wc'></svg> 
+			<svg id='wc' class='content'></svg> 
+			<svg id='corresp' class='content'></svg>
 		</main>
 		<footer id='footer'>
 			<div id='status'>status</div>
@@ -22,13 +30,13 @@
 				<input type='file' name='input_file' required>
 				<input type='checkbox' name='parts' value='名詞'>名詞
 				<input type='checkbox' name='parts' value='動詞'>動詞
-				<select name='dividenumber'>
+				<select name='divide'>
 					<option value='1'>1</option>
 					<option value='2'>2</option>
 					<option value='3'>3</option>
 					<option value='4'>4</option>
 				</select>
-				<select name='topicnumber'>
+				<select name='topic'>
 					<option value='3'>3</option>
 					<option value='5'>5</option>
 					<option value='10'>10</option>
