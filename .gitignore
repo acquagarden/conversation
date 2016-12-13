@@ -2,5 +2,5 @@ push.sh
 node_modules
 npm-debug.log
 server/src/ignore.txt
-server/res/files
-server/res/texts
+server/res/files/*
+server/res/texts/*
