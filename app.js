@@ -7,6 +7,7 @@ var
 	fs = require('fs'),
 	multer = require('multer'),
 	parser = require('body-parser'),
+	socketio = require('socket.io'),
 	port = 3001;
 
 app.use(express.static('app'));
@@ -34,10 +35,33 @@ app.get('/', function(req, res){
 	res.sendFile(__dirname + '/index.html');
 });
 
+app.get('/editor', function(req, res){
+	res.sendFile(__dirname + '/editor.html');
+});
+
+app.post('/changeRadius', function(req, res){
+	res.send(req.body.radius);
+});
+
+app.post('/emit', function(req, res){
+	io.sockets.emit('common', { value: req.body.data });
+	res.sendStatus(200);
+});
+
 var execute = require(__dirname + '/server/src/js/execute');
 app.post('/upload', upload.single('input_file'), function(req, res){
-	if(typeof req.file | typeof req.body.parts === 'undefined') res.sendStatus(400);
+	if(typeof req.file & req.body.text | typeof req.body.parts === 'undefined') res.sendStatus(400);
 	else{
+		if(typeof req.body.text !== 'undefined'){
+			var now = Date.now();
+
+			fs.writeFileSync(`server/res/texts/${String(now)}`, req.body.text);
+
+			req.file = {
+				filename: now
+			};
+		}
+
 		params.set({
 			file: req.file,
 			parts: req.body.parts.isArray > 1 ? req.body.parts.join(',') : req.body.parts,
@@ -80,4 +104,27 @@ app.post('/upload', upload.single('input_file'), function(req, res){
 server.on('request', app);
 server.listen(process.env.PORT || port, function(){
 	console.log(`server running at port : ${server.address().port}`);
+});
+
+var io = socketio.listen(server);
+
+io.on('connection', function(socket){
+	console.log(`connected [${socket.id}]`);
+
+	socket.on('room', function(data){
+		socket.join(data.value);
+		socket.emit('message', { value: `joined to room [${data.value}]` });
+	});
+
+	socket.on('message', function(data){
+		io.to(data.room).emit('message', { value: data.value });
+	});
+
+	socket.on('analysis', function(data){
+		io.to(data.room).emit('analysis', { value: data.value });
+	});
+
+	socket.on('mirror', function(data){
+		io.to(data.room).emit('mirror', { value: data.value });
+	});
 });

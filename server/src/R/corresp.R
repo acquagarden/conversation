@@ -1,7 +1,8 @@
 args <- commandArgs(trailingOnly=T)
 
 library(MASS)
-d <- read.csv(args[1], header=T, row.names=1)
+d <- read.csv(args[1], header=T, row.names=1, fileEncoding='UTF-8')
+d
 d.ca <- corresp(d, nf=ncol(d))
 
 d.rs <- d.ca$rscore

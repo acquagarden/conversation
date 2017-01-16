@@ -6,7 +6,7 @@ exports.divideTime = function(params){
 
 	var str = data.toString();
 
-	var strAry = str.split('\n');
+	var strAry = str.replace(/\r/g, '').split('\n');
 
 	var sizes = [];
 	for(var i = 0; i < params.divnumber; i++)
@@ -16,9 +16,9 @@ exports.divideTime = function(params){
 	var ary = [];
 	for(var i = 0, index = 0; i < params.divnumber; i++){
 		ary.push([]);
-		ary[i] += strAry[index++];
+		ary[i] += strAry[index++].split(':')[1];
 		for(var j = 1; j < sizes[i]; j++)
-			ary[i] += '\n' + strAry[index++];		
+			ary[i] += '\n' + strAry[index++].split(':')[1];		
 	}
 
 	for(var i = 0; i < ary.length; i++)
@@ -28,7 +28,7 @@ exports.divideTime = function(params){
 exports.dividePerson = function(params){
 	var data = fs.readFileSync(params.inputName);
 	
-	var strAry = data.toString().split('\n');
+	var strAry = data.toString().replace(/\r/g, '').split('\n');
 
 	var texts = {};
 	for(var str of strAry){
@@ -41,5 +41,5 @@ exports.dividePerson = function(params){
 	var keys = Object.keys(texts).sort();
 	
 	for(var i = 0; i < keys.length; i++)
-		fs.writeFileSync(`${params.outputDir}remark_${i}.txt`, texts[keys[i]]);
+		fs.writeFileSync(`${params.outputDir}remark_${[keys[i]]}.txt`, texts[keys[i]]);
 };

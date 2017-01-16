@@ -3,6 +3,9 @@
 var currentTab = 'corresp';
 
 function init(){
+	var div = document.getElementById('status');
+	var socketio = io.connect('/');
+
 	changeTabs(currentTab);
 
 	d3.json('server/src/params.json', function(err, params){
@@ -10,15 +13,59 @@ function init(){
 
 		var form = document.getElementById('upload');
 		form.addEventListener('submit', function(e){
-			var div = document.getElementById('status');
-			div.innerHTML = 'start';
+			e.preventDefault();
 
+			execAnalysis(params);
+		});
+
+		socketio.on('analysis', function(data){
+			execAnalysis(params, data);
+		});
+	});
+
+	var form2 = document.getElementById('changeRadius');
+	form2.addEventListener('submit', function(e){
+		e.preventDefault();
+
+		var xhr = new XMLHttpRequest();
+
+		xhr.onload = function(e){
+			console.log(xhr.responseText);
+		};
+
+		var formData = new FormData(form2);
+
+		xhr.open('post', '/changeRadius');
+		xhr.send(formData);
+	});
+
+	socketio.on('connect', function(){
+		div.innerHTML = 'connected server';
+	});
+
+	socketio.on('message', function(data){
+		div.innerHTML = data.value;
+	});
+
+	var roomId = document.getElementById('input_roomId');
+	var submit = document.getElementById('submit_roomId');
+	submit.addEventListener('click', function(e){
+		socketio.emit('room', { value: roomId.value });
+		roomId.value = '';
+	});
+}
+
+function execAnalysis(params, data){
+	var div = document.getElementById('status');
+	var form = document.getElementById('upload');
+
+	div.innerHTML = 'start';
 			(document.getElementById('wc')).innerHTML = '';
 			(document.getElementById('corresp')).innerHTML = '';
 
-			e.preventDefault();
-
 			var formData = new FormData(form);
+
+			if(typeof data !== 'undefined') formData.append('text', data.value);
 
 			var xhr = new XMLHttpRequest();
 
@@ -33,7 +80,8 @@ function init(){
 					drawClouds({ topicfiles: res.topicfiles });
 					drawCorresp({
 						components: params.components,
-						rowData: `server/res/files/${res.file.filename}/person/corresp/rscore.csv`
+						rowData: `server/res/files/${res.file.filename}/person/corresp/rscore.csv`,
+						colData: `server/res/files/${res.file.filename}/person/corresp/cscore.csv`
 					});
 				}
 			};
@@ -44,8 +92,6 @@ function init(){
 
 			xhr.open('post', '/upload');
 			xhr.send(formData);
-		});
-	});
 }
 
 function getSize(id){

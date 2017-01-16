@@ -9,7 +9,9 @@ var
 	outputName = process.argv[3];
 
 (function(){
-	read(inputName).then(exec).then(write);
+	read(inputName)
+		.then(exec).catch(function(e){ console.log(e); })
+		.then(write).catch(function(e){ console.log(e); });
 })();
 
 function read(fileName){

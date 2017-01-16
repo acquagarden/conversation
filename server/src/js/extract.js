@@ -9,7 +9,9 @@ var
 	options = process.argv[4].split(',');
 
 (function(){
-	read(inputName).then(extract).then(write);
+	read(inputName)
+		.then(extract).catch(function(e){ console.log(e); })
+		.then(write).catch(function(e){ console.log(e); });
 })();
 
 function extract(str){
@@ -22,7 +24,7 @@ function extract(str){
 			let parts = pos[0].match(/((?![<\/*pos>]).)+/g)[0];
 			if(options.indexOf(parts) >= 0){
 				let sur = elem.match(/<surface>.*?<\/surface>/g);
-				let word = sur[0].match(/((?![<\/*surface>]).)+/g)[0];
+				let word = sur[0].match(/((?![<\/*surface>]).)+/g)[0].replace(/,/g, '');
 				if(typeof words[word] === 'undefined') words[word] = 1;
 				else words[word]++;
 			}
